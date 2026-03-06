@@ -6,6 +6,7 @@ const {
   getMonitorUpText,
   getMonitorDownText
 } = require('./messages');
+const { logInfo, logError } = require('./logger');
 
 let lastVpnIsUp = null;
 
@@ -31,6 +32,7 @@ async function vpnMonitorLoop() {
     if (lastVpnIsUp === null) {
       lastVpnIsUp = isUp;
       monitorStats.lastChangeAt = now;
+      logInfo('monitor_start', { isUp, raw });
       await sendToAdmin(getMonitorStartupText(isUp, raw));
       return;
     }
@@ -40,14 +42,17 @@ async function vpnMonitorLoop() {
       monitorStats.lastChangeAt = now;
       if (isUp) {
         monitorStats.upEvents += 1;
+        logInfo('vpn_up', { raw });
         await sendToAdmin(getMonitorUpText(raw));
       } else {
         monitorStats.downEvents += 1;
+        logError('vpn_down', { raw });
         await sendToAdmin(getMonitorDownText(raw));
       }
     }
   } catch (e) {
     console.error('Ошибка в мониторинге VPN:', e);
+    logError('monitor_error', { message: e.message, stack: e.stack });
   }
 }
 

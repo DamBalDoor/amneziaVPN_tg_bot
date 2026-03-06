@@ -13,6 +13,7 @@ const {
   getVpnRestartErrorText,
   getVpnRestartSuccessText
 } = require('../messages');
+const { logInfo, logError } = require('../logger');
 
 let lastRestartAtMs = 0;
 
@@ -27,11 +28,14 @@ function registerRestartVpnCommand() {
 
     if (lastRestartAtMs && now - lastRestartAtMs < cooldownMs) {
       const remainingSec = Math.ceil((cooldownMs - (now - lastRestartAtMs)) / 1000);
+      logInfo('vpn_restart_throttled', { remainingSec });
       await bot.sendMessage(msg.chat.id, getVpnRestartCooldownText(remainingSec));
       return;
     }
 
     lastRestartAtMs = now;
+
+    logInfo('vpn_restart_requested', { from: msg.from?.id });
 
     await bot.sendMessage(msg.chat.id, getVpnRestartStartText(), {
       parse_mode: 'Markdown'
@@ -41,9 +45,11 @@ function registerRestartVpnCommand() {
       VPN_RESTART_CMD && VPN_RESTART_CMD.trim() !== ''
         ? VPN_RESTART_CMD
         : `sudo systemctl restart ${VPN_SERVICE_NAME}`;
+    logInfo('vpn_restart_exec', { cmd });
     const result = await execCommand(cmd);
 
     if (!result.ok) {
+      logError('vpn_restart_failed', { stderr: result.stderr, stdout: result.stdout });
       await bot.sendMessage(msg.chat.id, getVpnRestartErrorText(result.stderr || result.stdout), {
         parse_mode: 'Markdown'
       });
@@ -51,6 +57,7 @@ function registerRestartVpnCommand() {
     }
 
     const { isUp, raw } = await checkVpnStatus();
+    logInfo('vpn_restart_status_after', { isUp, raw });
     await bot.sendMessage(msg.chat.id, getVpnRestartSuccessText(isUp, raw), {
       parse_mode: 'Markdown'
     });
