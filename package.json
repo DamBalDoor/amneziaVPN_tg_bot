@@ -1,0 +1,21 @@
+{
+  "name": "amneziavpn_tg_bot",
+  "version": "1.0.0",
+  "description": "Telegram-бот для мониторинга и управления Amnezia VPN на сервере",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "keywords": [
+    "telegram-bot",
+    "amnezia-vpn",
+    "monitoring"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}
