@@ -1,4 +1,4 @@
-const { VPN_SERVICE_NAME } = require('./config');
+const { VPN_SERVICE_NAME, VPN_RESTART_CMD } = require('./config');
 const { bot } = require('./bot');
 const { isFromAdmin } = require('./utils/admin');
 const { checkVpnStatus } = require('./vpnStatus');
@@ -15,7 +15,7 @@ function registerCommands() {
       'Привет! Я бот мониторинга Amnezia VPN.\n' +
         'Доступные команды:\n' +
         '/status - показать статус VPN\n' +
-        '/restart_vpn - перезапустить VPN-сервис\n' +
+        '/restart_vpn - перезапустить VPN (через настроенную команду)\n' +
         '/reboot_server - мягкий перезапуск сервера'
     );
   });
@@ -39,11 +39,14 @@ function registerCommands() {
       return;
     }
 
-    await bot.sendMessage(msg.chat.id, `⏳ Перезапускаю VPN-сервис \`${VPN_SERVICE_NAME}\`...`, {
+    await bot.sendMessage(msg.chat.id, `⏳ Перезапускаю VPN...`, {
       parse_mode: 'Markdown'
     });
 
-    const cmd = `sudo systemctl restart ${VPN_SERVICE_NAME}`;
+    const cmd =
+      (VPN_RESTART_CMD && VPN_RESTART_CMD.trim() !== '')
+        ? VPN_RESTART_CMD
+        : `sudo systemctl restart ${VPN_SERVICE_NAME}`;
     const result = await execCommand(cmd);
 
     if (!result.ok) {
