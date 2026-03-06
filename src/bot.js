@@ -1,10 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { BOT_TOKEN, ADMIN_CHAT_ID } = require('./config');
-const { logInfo, logError } = require('./logger');
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-
-logInfo('bot_started', { });
 
 // Регистрируем команды для меню Telegram
 bot
@@ -18,7 +15,6 @@ bot
   ])
   .catch((e) => {
     console.error('Не удалось установить список команд бота:', e.message);
-    logError('setMyCommands_failed', { message: e.message });
   });
 
 async function sendToAdmin(text, options = {}) {
@@ -29,7 +25,6 @@ async function sendToAdmin(text, options = {}) {
     });
   } catch (e) {
     console.error('Не удалось отправить сообщение админу:', e.message);
-    logError('sendToAdmin_failed', { message: e.message });
   }
 }
 
