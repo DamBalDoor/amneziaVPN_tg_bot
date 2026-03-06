@@ -3,6 +3,18 @@ const { BOT_TOKEN, ADMIN_CHAT_ID } = require('./config');
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
+// Регистрируем команды для меню Telegram
+bot
+  .setMyCommands([
+    { command: 'help', description: 'Показать список команд' },
+    { command: 'status', description: 'Показать статус VPN' },
+    { command: 'restart_vpn', description: 'Перезапустить VPN' },
+    { command: 'reboot_server', description: 'Мягкий перезапуск сервера' }
+  ])
+  .catch((e) => {
+    console.error('Не удалось установить список команд бота:', e.message);
+  });
+
 async function sendToAdmin(text, options = {}) {
   try {
     await bot.sendMessage(ADMIN_CHAT_ID, text, {
