@@ -11,7 +11,8 @@ bot
     { command: 'status', description: 'Показать статус VPN' },
     { command: 'stats', description: 'Показать статистику мониторинга' },
     { command: 'restart_vpn', description: 'Перезапустить VPN' },
-    { command: 'reboot_server', description: 'Мягкий перезапуск сервера' }
+    { command: 'reboot_server', description: 'Мягкий перезапуск сервера' },
+    { command: 'logs_tail', description: 'Показать хвост лога' }
   ])
   .catch((e) => {
     console.error('Не удалось установить список команд бота:', e.message);

@@ -7,6 +7,7 @@ const {
   getRebootAlreadyInProgressText,
   getRebootStartText
 } = require('../messages');
+const { logEvent } = require('../logger');
 
 let rebootInProgress = false;
 
@@ -16,6 +17,11 @@ function registerRebootServerCommand() {
     if (!isFromAdmin(msg)) {
       return;
     }
+
+    logEvent('reboot_requested', 'Reboot requested', {
+      chatId: msg.chat.id,
+      from: msg.from?.id
+    });
 
     await bot.sendMessage(msg.chat.id, getRebootConfirmPrompt(), {
       reply_markup: {
@@ -52,6 +58,10 @@ function registerRebootServerCommand() {
         chat_id: message.chat.id,
         message_id: message.message_id
       });
+      logEvent('reboot_cancelled', 'Reboot cancelled by user', {
+        chatId: message.chat.id,
+        from: message.from?.id
+      });
       return;
     }
 
@@ -60,6 +70,10 @@ function registerRebootServerCommand() {
         await bot.answerCallbackQuery(query.id, {
           text: getRebootAlreadyInProgressText(),
           show_alert: true
+        });
+        logEvent('reboot_already_in_progress', 'Reboot already in progress', {
+          chatId: message.chat.id,
+          from: message.from?.id
         });
         return;
       }
@@ -74,6 +88,10 @@ function registerRebootServerCommand() {
       });
 
       const cmd = 'sudo reboot';
+      logEvent('reboot_started', 'Reboot command executed', {
+        chatId: message.chat.id,
+        from: message.from?.id
+      });
       await execCommand(cmd);
     }
   });

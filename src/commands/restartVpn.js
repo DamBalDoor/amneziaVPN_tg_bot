@@ -13,6 +13,7 @@ const {
   getVpnRestartErrorText,
   getVpnRestartSuccessText
 } = require('../messages');
+const { logEvent } = require('../logger');
 
 let lastRestartAtMs = 0;
 
@@ -28,10 +29,18 @@ function registerRestartVpnCommand() {
     if (lastRestartAtMs && now - lastRestartAtMs < cooldownMs) {
       const remainingSec = Math.ceil((cooldownMs - (now - lastRestartAtMs)) / 1000);
       await bot.sendMessage(msg.chat.id, getVpnRestartCooldownText(remainingSec));
+      logEvent('vpn_restart_throttled', 'VPN restart throttled', {
+        chatId: msg.chat.id,
+        remainingSec
+      });
       return;
     }
 
     lastRestartAtMs = now;
+    logEvent('vpn_restart_requested', 'VPN restart requested', {
+      chatId: msg.chat.id,
+      from: msg.from?.id
+    });
 
     await bot.sendMessage(msg.chat.id, getVpnRestartStartText(), {
       parse_mode: 'Markdown'
@@ -47,6 +56,10 @@ function registerRestartVpnCommand() {
       await bot.sendMessage(msg.chat.id, getVpnRestartErrorText(result.stderr || result.stdout), {
         parse_mode: 'Markdown'
       });
+      logEvent('vpn_restart_error', 'VPN restart failed', {
+        chatId: msg.chat.id,
+        error: result.stderr || result.stdout
+      });
       return;
     }
 
@@ -54,6 +67,7 @@ function registerRestartVpnCommand() {
     await bot.sendMessage(msg.chat.id, getVpnRestartSuccessText(isUp, raw), {
       parse_mode: 'Markdown'
     });
+    logEvent('vpn_restart_success', 'VPN restart completed', { isUp, raw });
   });
 }
 

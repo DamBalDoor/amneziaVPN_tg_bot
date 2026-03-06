@@ -5,6 +5,7 @@ const { registerRestartVpnCommand } = require('./restartVpn');
 const { registerRebootServerCommand } = require('./rebootServer');
 const { registerStatsCommand } = require('./stats');
 const { registerPingCommand } = require('./ping');
+const { registerLogsTailCommand } = require('./logsTail');
 
 function registerCommands() {
   registerHelpCommand();
@@ -14,6 +15,7 @@ function registerCommands() {
   registerRebootServerCommand();
   registerStatsCommand();
   registerPingCommand();
+  registerLogsTailCommand();
 }
 
 module.exports = {

@@ -6,6 +6,7 @@ const {
   getMonitorUpText,
   getMonitorDownText
 } = require('./messages');
+const { logEvent } = require('./logger');
 
 let lastVpnIsUp = null;
 
@@ -31,6 +32,7 @@ async function vpnMonitorLoop() {
     if (lastVpnIsUp === null) {
       lastVpnIsUp = isUp;
       monitorStats.lastChangeAt = now;
+      logEvent('monitor_start', 'Monitor started', { isUp, raw });
       await sendToAdmin(getMonitorStartupText(isUp, raw));
       return;
     }
@@ -40,14 +42,17 @@ async function vpnMonitorLoop() {
       monitorStats.lastChangeAt = now;
       if (isUp) {
         monitorStats.upEvents += 1;
+        logEvent('vpn_up', 'VPN status changed to UP', { raw });
         await sendToAdmin(getMonitorUpText(raw));
       } else {
         monitorStats.downEvents += 1;
+        logEvent('vpn_down', 'VPN status changed to DOWN', { raw });
         await sendToAdmin(getMonitorDownText(raw));
       }
     }
   } catch (e) {
     console.error('Ошибка в мониторинге VPN:', e);
+    logEvent('monitor_error', 'Error in VPN monitor loop', { error: e.message });
   }
 }
 
