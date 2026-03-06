@@ -6,6 +6,7 @@ const VPN_SERVICE_NAME = process.env.VPN_SERVICE_NAME || 'amnezia-vpn';
 const VPN_CHECK_INTERVAL_MS = Number(process.env.VPN_CHECK_INTERVAL_MS || 60000);
 const VPN_HEALTHCHECK_CMD = process.env.VPN_HEALTHCHECK_CMD;
 const VPN_RESTART_CMD = process.env.VPN_RESTART_CMD;
+const VPN_RESTART_COOLDOWN_SEC = Number(process.env.VPN_RESTART_COOLDOWN_SEC || 60);
 
 if (!BOT_TOKEN) {
   console.error('ERROR: TELEGRAM_BOT_TOKEN не задан в .env');
@@ -23,6 +24,7 @@ module.exports = {
   VPN_SERVICE_NAME,
   VPN_CHECK_INTERVAL_MS,
   VPN_HEALTHCHECK_CMD,
-  VPN_RESTART_CMD
+  VPN_RESTART_CMD,
+  VPN_RESTART_COOLDOWN_SEC
 };
 

@@ -2,35 +2,77 @@ const { bot } = require('../bot');
 const { isFromAdmin } = require('../utils/admin');
 const { execCommand } = require('../utils/execCommand');
 
-// Максимальный "возраст" команды на перезагрузку (в секундах),
-// чтобы не выполнять старые /reboot_server после рестарта бота
-const MAX_REBOOT_COMMAND_AGE_SEC = 10;
+let rebootInProgress = false;
 
 function registerRebootServerCommand() {
+  // Обработка текстовой команды
   bot.onText(/^\/reboot_server$/, async (msg) => {
     if (!isFromAdmin(msg)) {
       return;
     }
 
-    const nowSec = Math.floor(Date.now() / 1000);
-    const msgAgeSec = nowSec - msg.date;
+    await bot.sendMessage(msg.chat.id, '⚠️ Точно перезагрузить сервер?', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: 'Да, перезагрузить', callback_data: 'reboot_server_confirm' },
+            { text: 'Отмена', callback_data: 'reboot_server_cancel' }
+          ]
+        ]
+      }
+    });
+  });
 
-    // Если команда слишком старая (например, была до предыдущего рестарта),
-    // игнорируем её, чтобы избежать бесконечного цикла перезагрузок.
-    if (msgAgeSec > MAX_REBOOT_COMMAND_AGE_SEC) {
-      console.log(
-        `Старая команда /reboot_server проигнорирована (возраст ${msgAgeSec} сек).`
-      );
+  // Обработка нажатий на inline-кнопки
+  bot.on('callback_query', async (query) => {
+    const { data, message } = query;
+
+    if (!data || !message) {
       return;
     }
 
-    await bot.sendMessage(
-      msg.chat.id,
-      '⚠️ Запускаю мягкий перезапуск сервера. Бот временно будет недоступен.'
-    );
+    if (!data.startsWith('reboot_server_')) {
+      return;
+    }
 
-    const cmd = 'sudo reboot';
-    await execCommand(cmd);
+    if (!isFromAdmin(message)) {
+      await bot.answerCallbackQuery(query.id, { text: 'Нет доступа', show_alert: true });
+      return;
+    }
+
+    if (data === 'reboot_server_cancel') {
+      await bot.answerCallbackQuery(query.id, { text: 'Перезагрузка отменена' });
+      await bot.editMessageText('Перезагрузка сервера отменена.', {
+        chat_id: message.chat.id,
+        message_id: message.message_id
+      });
+      return;
+    }
+
+    if (data === 'reboot_server_confirm') {
+      if (rebootInProgress) {
+        await bot.answerCallbackQuery(query.id, {
+          text: 'Перезагрузка уже выполняется.',
+          show_alert: true
+        });
+        return;
+      }
+
+      rebootInProgress = true;
+
+      await bot.answerCallbackQuery(query.id, { text: 'Запускаю перезагрузку...' });
+
+      await bot.editMessageText(
+        '⚠️ Запускаю мягкий перезапуск сервера. Бот временно будет недоступен.',
+        {
+          chat_id: message.chat.id,
+          message_id: message.message_id
+        }
+      );
+
+      const cmd = 'sudo reboot';
+      await execCommand(cmd);
+    }
   });
 }
 

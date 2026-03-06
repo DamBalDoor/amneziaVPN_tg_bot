@@ -1,14 +1,34 @@
 const { bot } = require('../bot');
 const { isFromAdmin } = require('../utils/admin');
-const { VPN_SERVICE_NAME, VPN_RESTART_CMD } = require('../config');
+const {
+  VPN_SERVICE_NAME,
+  VPN_RESTART_CMD,
+  VPN_RESTART_COOLDOWN_SEC
+} = require('../config');
 const { execCommand } = require('../utils/execCommand');
 const { checkVpnStatus } = require('../vpnStatus');
+
+let lastRestartAtMs = 0;
 
 function registerRestartVpnCommand() {
   bot.onText(/^\/restart_vpn$/, async (msg) => {
     if (!isFromAdmin(msg)) {
       return;
     }
+
+    const now = Date.now();
+    const cooldownMs = VPN_RESTART_COOLDOWN_SEC * 1000;
+
+    if (lastRestartAtMs && now - lastRestartAtMs < cooldownMs) {
+      const remainingSec = Math.ceil((cooldownMs - (now - lastRestartAtMs)) / 1000);
+      await bot.sendMessage(
+        msg.chat.id,
+        `⏳ Слишком часто перезапускать VPN нельзя. Подожди ещё ${remainingSec} сек.`
+      );
+      return;
+    }
+
+    lastRestartAtMs = now;
 
     await bot.sendMessage(msg.chat.id, `⏳ Перезапускаю VPN...`, {
       parse_mode: 'Markdown'
