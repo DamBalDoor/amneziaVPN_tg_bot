@@ -1,7 +1,11 @@
-const os = require('os');
-const { VPN_SERVICE_NAME, VPN_CHECK_INTERVAL_MS } = require('./config');
+const { VPN_CHECK_INTERVAL_MS } = require('./config');
 const { checkVpnStatus } = require('./vpnStatus');
 const { sendToAdmin } = require('./bot');
+const {
+  getMonitorStartupText,
+  getMonitorUpText,
+  getMonitorDownText
+} = require('./messages');
 
 let lastVpnIsUp = null;
 
@@ -27,10 +31,7 @@ async function vpnMonitorLoop() {
     if (lastVpnIsUp === null) {
       lastVpnIsUp = isUp;
       monitorStats.lastChangeAt = now;
-      await sendToAdmin(
-        `🤖 Бот запущен на \`${os.hostname()}\`.\n` +
-          `Текущий статус VPN-сервиса \`${VPN_SERVICE_NAME}\`: *${isUp ? 'ACTIVE' : 'INACTIVE'}* (${raw}).`
-      );
+      await sendToAdmin(getMonitorStartupText(isUp, raw));
       return;
     }
 
@@ -39,14 +40,10 @@ async function vpnMonitorLoop() {
       monitorStats.lastChangeAt = now;
       if (isUp) {
         monitorStats.upEvents += 1;
-        await sendToAdmin(
-          `✅ VPN-сервис \`${VPN_SERVICE_NAME}\` восстановил работу (status: \`${raw}\`).`
-        );
+        await sendToAdmin(getMonitorUpText(raw));
       } else {
         monitorStats.downEvents += 1;
-        await sendToAdmin(
-          `❌ VPN-сервис \`${VPN_SERVICE_NAME}\` НЕ работает (status: \`${raw}\`).`
-        );
+        await sendToAdmin(getMonitorDownText(raw));
       }
     }
   } catch (e) {

@@ -7,10 +7,11 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 bot
   .setMyCommands([
     { command: 'help', description: 'Показать список команд' },
+    { command: 'ping', description: 'Проверить, что бот жив' },
     { command: 'status', description: 'Показать статус VPN' },
+    { command: 'stats', description: 'Показать статистику мониторинга' },
     { command: 'restart_vpn', description: 'Перезапустить VPN' },
-    { command: 'reboot_server', description: 'Мягкий перезапуск сервера' },
-    { command: 'stats', description: 'Показать статистику мониторинга' }
+    { command: 'reboot_server', description: 'Мягкий перезапуск сервера' }
   ])
   .catch((e) => {
     console.error('Не удалось установить список команд бота:', e.message);

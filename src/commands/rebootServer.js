@@ -1,6 +1,12 @@
 const { bot } = require('../bot');
 const { isFromAdmin } = require('../utils/admin');
 const { execCommand } = require('../utils/execCommand');
+const {
+  getRebootConfirmPrompt,
+  getRebootCancelledText,
+  getRebootAlreadyInProgressText,
+  getRebootStartText
+} = require('../messages');
 
 let rebootInProgress = false;
 
@@ -11,7 +17,7 @@ function registerRebootServerCommand() {
       return;
     }
 
-    await bot.sendMessage(msg.chat.id, '⚠️ Точно перезагрузить сервер?', {
+    await bot.sendMessage(msg.chat.id, getRebootConfirmPrompt(), {
       reply_markup: {
         inline_keyboard: [
           [
@@ -41,8 +47,8 @@ function registerRebootServerCommand() {
     }
 
     if (data === 'reboot_server_cancel') {
-      await bot.answerCallbackQuery(query.id, { text: 'Перезагрузка отменена' });
-      await bot.editMessageText('Перезагрузка сервера отменена.', {
+      await bot.answerCallbackQuery(query.id, { text: getRebootCancelledText() });
+      await bot.editMessageText(getRebootCancelledText(), {
         chat_id: message.chat.id,
         message_id: message.message_id
       });
@@ -52,7 +58,7 @@ function registerRebootServerCommand() {
     if (data === 'reboot_server_confirm') {
       if (rebootInProgress) {
         await bot.answerCallbackQuery(query.id, {
-          text: 'Перезагрузка уже выполняется.',
+          text: getRebootAlreadyInProgressText(),
           show_alert: true
         });
         return;
@@ -62,13 +68,10 @@ function registerRebootServerCommand() {
 
       await bot.answerCallbackQuery(query.id, { text: 'Запускаю перезагрузку...' });
 
-      await bot.editMessageText(
-        '⚠️ Запускаю мягкий перезапуск сервера. Бот временно будет недоступен.',
-        {
-          chat_id: message.chat.id,
-          message_id: message.message_id
-        }
-      );
+      await bot.editMessageText(getRebootStartText(), {
+        chat_id: message.chat.id,
+        message_id: message.message_id
+      });
 
       const cmd = 'sudo reboot';
       await execCommand(cmd);
