@@ -3,6 +3,7 @@ const { registerStartCommand } = require('./start');
 const { registerStatusCommand } = require('./status');
 const { registerRestartVpnCommand } = require('./restartVpn');
 const { registerRebootServerCommand } = require('./rebootServer');
+const { registerStatsCommand } = require('./stats');
 
 function registerCommands() {
   registerHelpCommand();
@@ -10,6 +11,7 @@ function registerCommands() {
   registerStatusCommand();
   registerRestartVpnCommand();
   registerRebootServerCommand();
+  registerStatsCommand();
 }
 
 module.exports = {
