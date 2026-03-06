@@ -6,6 +6,7 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 // Регистрируем команды для меню Telegram
 bot
   .setMyCommands([
+    { command: 'start', description: 'Начать работу с ботом' },
     { command: 'help', description: 'Показать список команд' },
     { command: 'ping', description: 'Проверить, что бот жив' },
     { command: 'status', description: 'Показать статус VPN' },
